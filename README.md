@@ -22,6 +22,7 @@ In order for it to work, we need to install the nfs tool for windows.
 Then we can make the box run.
 
 `vagrant box add wakeasp/CentOS7PHP7`
+
 `vagrant up` 
 
 There is a defualt apache DocumentRoot sync to host directory  "C://web". 
