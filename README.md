@@ -27,3 +27,5 @@ Then we can make the box run.
 
 There is a defualt apache DocumentRoot sync to host directory  "C://web". 
 If you want to change it, do it by yourself in the VagrantFile.
+
+The default database root password is "root".
