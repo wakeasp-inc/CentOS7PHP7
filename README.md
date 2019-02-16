@@ -14,11 +14,6 @@ Install [Vagrant](https://www.vagrantup.com/)
 The default VagrantFile setting is for windows users.
 If you use Linux or Mac , please configure it yourself.
 
-The default vagrant sync is slow , so we changed it to nfs type.
-In order for it to work, we need to install the nfs tool for windows.
-
-`vagrant plugin install vagrant-winnfsd`
-
 Then we can make the box run.
 
 `vagrant box add wakeasp/CentOS7PHP7`
