@@ -1,6 +1,42 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+$script = <<-SHELL
+      if [ ! -d "/symfony" ]; then
+        mkdir /symfony
+      fi
+      chown -R apache:apache /symfony
+      chmod -R 775 /symfony
+      usermod -g apache vagrant
+      echo "
+[Unit]
+Description=The Apache HTTP Server
+After=network.target remote-fs.target nss-lookup.target
+Documentation=man:httpd(8)
+Documentation=man:apachectl(8)
+
+[Service]
+UMask = 0002
+Type=notify
+EnvironmentFile=/etc/sysconfig/httpd
+ExecStart=/usr/sbin/httpd $OPTIONS -DFOREGROUND
+ExecReload=/usr/sbin/httpd $OPTIONS -k graceful
+ExecStop=/bin/kill -WINCH ${MAINPID}
+# We want systemd to give httpd some time to finish gracefully, but still want
+# it to kill httpd after TimeoutStopSec if something went wrong during the
+# graceful stop. Normally, Systemd sends SIGTERM signal right after the
+# ExecStop, which would kill httpd. We are sending useless SIGCONT here to give
+# httpd time to finish.
+KillSignal=SIGCONT
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+      " > /lib/systemd/system/httpd.service
+      systemctl daemon-reload
+      systemctl restart httpd.service
+SHELL
+
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
@@ -81,11 +117,6 @@ Vagrant.configure("2") do |config|
   #   apt-get install -y apache2
   # SHELL
 
-  config.vm.provision "shell", inline: <<-SHELL
-      if [ ! -d "/symfony" ]; then
-        mkdir /symfony
-      fi
-      chmod -R 777 /symfony
-  SHELL
+  config.vm.provision "shell", inline: $script
   end
 end
