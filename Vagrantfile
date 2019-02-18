@@ -8,6 +8,10 @@ $script = <<-SHELL
       chown -R apache:apache /symfony
       chmod -R 775 /symfony
       usermod -g apache vagrant
+      HTTPDUSER=$(ps axo user,comm | grep -E '[a]pache|[h]ttpd|[_]www|[w]ww-data|[n]ginx|[v]agrant' | grep -v root | head -1 | cut -d ' ' -f1)
+      sudo setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX /symfony
+      sudo setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX /symfony
+
       echo "
 [Unit]
 Description=The Apache HTTP Server
@@ -33,6 +37,7 @@ PrivateTmp=true
 [Install]
 WantedBy=multi-user.target
       " > /lib/systemd/system/httpd.service
+
       systemctl daemon-reload
       systemctl restart httpd.service
 SHELL
