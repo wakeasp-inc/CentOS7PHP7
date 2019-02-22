@@ -27,7 +27,7 @@ ExecStart=/usr/sbin/httpd $OPTIONS -DFOREGROUND
 ExecReload=/usr/sbin/httpd $OPTIONS -k graceful
 ExecStop=/bin/kill -WINCH ${MAINPID}
 # We want systemd to give httpd some time to finish gracefully, but still want
-# it to kill httpd after TimeoutStopSec if something went wrong during the
+# it to kill httpd after TimeoutStopSec if something went wrong during thev
 # graceful stop. Normally, Systemd sends SIGTERM signal right after the
 # ExecStop, which would kill httpd. We are sending useless SIGCONT here to give
 # httpd time to finish.
@@ -77,10 +77,9 @@ Vagrant.configure("2") do |config|
   # within the machine from a port on the host machine and only allow access
   # via 127.0.0.1 to disable public access
   # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
-
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
+  config.vm.network "private_network", ip: "192.168.254.10"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -91,8 +90,7 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  config.vm.synced_folder "C://web", "/home/vagrant/web",
-      owner: "root", group: "root"
+  config.vm.synced_folder "C://web", "/home/vagrant/web", type: "nfs"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
