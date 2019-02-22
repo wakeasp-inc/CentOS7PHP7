@@ -2,44 +2,26 @@
 # vi: set ft=ruby :
 
 $script = <<-SHELL
-      if [ ! -d "/symfony" ]; then
-        mkdir /symfony
-      fi
-      chown -R apache:apache /symfony
-      chmod -R 775 /symfony
-      usermod -g apache vagrant
-      HTTPDUSER=$(ps axo user,comm | grep -E '[a]pache|[h]ttpd|[_]www|[w]ww-data|[n]ginx|[v]agrant' | grep -v root | head -1 | cut -d ' ' -f1)
-      sudo setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX /symfony
-      sudo setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX /symfony
 
-      echo "
-[Unit]
-Description=The Apache HTTP Server
-After=network.target remote-fs.target nss-lookup.target
-Documentation=man:httpd(8)
-Documentation=man:apachectl(8)
+  mysql -uroot -proot -e "CREATE USER 'vagrant'@'localhost' IDENTIFIED BY 'vagrant';"
+  mysql -uroot -proot -e "GRANT ALL PRIVILEGES ON *.* TO 'vagrant'@'localhost';"
+  mysql -uroot -proot -e "CREATE USER 'vagrant'@'gateway' IDENTIFIED BY 'vagrant';"
+  mysql -uroot -proot -e "GRANT ALL PRIVILEGES ON *.* TO 'vagrant'@'gateway';"
+  mysql -uroot -proot -e "FLUSH PRIVILEGES;"
 
-[Service]
-UMask = 0002
-Type=notify
-EnvironmentFile=/etc/sysconfig/httpd
-ExecStart=/usr/sbin/httpd $OPTIONS -DFOREGROUND
-ExecReload=/usr/sbin/httpd $OPTIONS -k graceful
-ExecStop=/bin/kill -WINCH ${MAINPID}
-# We want systemd to give httpd some time to finish gracefully, but still want
-# it to kill httpd after TimeoutStopSec if something went wrong during thev
-# graceful stop. Normally, Systemd sends SIGTERM signal right after the
-# ExecStop, which would kill httpd. We are sending useless SIGCONT here to give
-# httpd time to finish.
-KillSignal=SIGCONT
-PrivateTmp=true
+  if [ ! -d "/symfony" ] 
+  then
+    mkdir /symfony
+  fi
 
-[Install]
-WantedBy=multi-user.target
-      " > /lib/systemd/system/httpd.service
+  HTTPDUSER=$(ps axo user,comm | grep -E '[a]pache|[h]ttpd|[_]www|[w]ww-data|[n]ginx|[v]agrant' | grep -v root | head -1 | cut -d ' ' -f1)
+  sudo setfacl -dR -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX /symfony
+  sudo setfacl -R -m u:"$HTTPDUSER":rwX -m u:$(whoami):rwX /symfony
+  chown -R apache:apache /symfony
+  chmod -R 775 /symfony
+  
+  echo "run success."
 
-      systemctl daemon-reload
-      systemctl restart httpd.service
 SHELL
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
@@ -70,6 +52,7 @@ Vagrant.configure("2") do |config|
   # config.ssh.insert_key = false
   # config.ssh.keys_only = false
   # config.ssh.password = "vagrant"
+  config.ssh.pty = true
   config.winrm.timeout =   1800 # 30 minutes
   config.vm.boot_timeout = 1800 # 30 minutes
   
@@ -98,15 +81,12 @@ Vagrant.configure("2") do |config|
   #
   config.vm.provider "virtualbox" do |vb|
   #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
+  #  vb.gui = true
   #
   #   # Customize the amount of memory on the VM:
   #   vb.memory = "4096"
-  #end
-
-  config.vm.provider "virtualbox" do |v|
-    v.memory = 4096
-    v.cpus = 2
+    vb.memory = 2048
+    vb.cpus = 2
   end
   #
   # View the documentation for the provider you are using for more
@@ -121,5 +101,5 @@ Vagrant.configure("2") do |config|
   # SHELL
 
   config.vm.provision "shell", inline: $script
-  end
+  
 end
