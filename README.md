@@ -33,7 +33,7 @@ The mariaDB users:
 
 root@localhsot  password:root
 
-vagrant@localhost password:root
+vagrant@localhost password:vagrant
 
 The nfs sync have some problem on writing a large number of files .
 
